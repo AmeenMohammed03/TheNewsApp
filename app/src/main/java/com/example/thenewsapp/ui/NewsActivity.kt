@@ -76,26 +76,4 @@ class NewsActivity : AppCompatActivity() {
         }
         popupMenu.show()
     }
-
-
-
-//    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-//        menuInflater.inflate(R.menu.menu_main, menu)
-//        return true
-//    }
-
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        return when (item.itemId) {
-//            R.id.menu_select_country -> {
-//                // Handle select country action
-//                true
-//            }
-//            R.id.menu_exit -> {
-//                // Handle exit action
-//                finish()
-//                true
-//            }
-//            else -> super.onOptionsItemSelected(item)
-//        }
-//    }
 }
