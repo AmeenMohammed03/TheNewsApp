@@ -55,26 +55,28 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     }
 
     private fun reloadHeadlines() {
+        swipeRefreshLayout.isRefreshing = true
         newsViewModel.getHeadlines("us")
     }
-
     private fun observeHeadlines() {
         newsViewModel.headlines.observe(viewLifecycleOwner, Observer { response ->
             when (response) {
                 is Resource.Success -> {
                     ProgressBar(false)
+                    swipeRefreshLayout.isRefreshing = false
                     response.data?.let { newsResponse ->
                         handleHeadlinesResponse(newsResponse)
                     }
                 }
                 is Resource.Error -> {
                     ProgressBar(true)
+                    swipeRefreshLayout.isRefreshing = false
                     response.message?.let { message ->
                         Toast.makeText(activity, "Sorry error: $message", Toast.LENGTH_SHORT).show()
                     }
                 }
                 is Resource.Loading -> {
-                    ProgressBar(true)
+                    ProgressBar(false)
                 }
             }
         })
