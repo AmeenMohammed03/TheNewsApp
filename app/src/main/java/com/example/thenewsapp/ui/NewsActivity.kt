@@ -1,10 +1,10 @@
 package com.example.thenewsapp.ui
 
 import android.os.Bundle
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.thenewsapp.R
@@ -12,16 +12,18 @@ import com.example.thenewsapp.databinding.ActivityNewsBinding
 import com.example.thenewsapp.repository.NewsRepository
 import com.example.thenewsapp.viewModel.NewsViewModel
 import com.example.thenewsapp.viewModel.NewsViewModelProviderFactory
+import com.google.android.material.navigation.NavigationView
 
 class NewsActivity : AppCompatActivity() {
 
     lateinit var newsViewModel: NewsViewModel
     private lateinit var binding: ActivityNewsBinding
+    private lateinit var navigationView: NavigationView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNewsBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_news)
+        setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
 
@@ -35,32 +37,29 @@ class NewsActivity : AppCompatActivity() {
         val navController = navHostFragment.navController
         binding.bottomNavigationView.setupWithNavController(navController)
 
-        // NewsActivity.kt
-        binding.bottomNavigationView.setOnNavigationItemSelectedListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.headlinesFragment2 -> {
-                    // Navigate to the headlines fragment
-                    findNavController(R.id.newsNavHostFragment).navigate(R.id.headlinesFragment2)
-                    true
-                }
-                R.id.searchFragment2 -> {
-                    // Navigate to the search fragment
-                    findNavController(R.id.newsNavHostFragment).navigate(R.id.searchFragment2)
-                    true
-                }
-                else -> false
-            }
-        }
+        // Set up the navigation drawer
+        navigationView = findViewById(R.id.navigationView)
+        setUpDrawer()
 
         binding.toolbar.setOnClickListener {
-            showPopupMenu()
+            // Open or close the navigation drawer when toolbar is clicked
+            if (binding.drawerlayout.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerlayout.closeDrawer(GravityCompat.START)
+            } else {
+                binding.drawerlayout.openDrawer(GravityCompat.START)
+            }
         }
     }
 
-    private fun showPopupMenu() {
-        val popupMenu = PopupMenu(this, binding.toolbar)
-        popupMenu.menuInflater.inflate(R.menu.menu_main, popupMenu.menu)
-        popupMenu.setOnMenuItemClickListener { menuItem ->
+    private fun setUpDrawer() {
+        val toggle = ActionBarDrawerToggle(
+            this, binding.drawerlayout, binding.toolbar,
+            R.string.nav_open, R.string.nav_close
+        )
+        binding.drawerlayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_select_country -> {
                     // Handle Select Country option
@@ -74,6 +73,5 @@ class NewsActivity : AppCompatActivity() {
                 else -> false
             }
         }
-        popupMenu.show()
     }
 }
