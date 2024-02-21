@@ -18,13 +18,7 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
 
     val headlines: MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
     var headlinesPage = 1
-    var headlinesResponse: NewsResponse? = null
-
-//    val searchNews: MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
-//    var searchNewsPage = 1
-//    var searchNewsResponse: NewsResponse? = null
-//    var newSearchQuery: String? = null
-//    var oldSearchQuery: String? = null
+    private var headlinesResponse: NewsResponse? = null
 
     init {
         getHeadlines("us")
@@ -33,10 +27,6 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
     fun getHeadlines(countryCode: String) = viewModelScope.launch {
         headlinesInternet(countryCode)
     }
-
-//    fun searchNews(searchQuery: String) = viewModelScope.launch {
-//        searchNewsInternet(searchQuery)
-//    }
 
     private fun handleHeadlinesResponse(response: Response<NewsResponse>): Resource<NewsResponse>{
         if(response.isSuccessful){
@@ -56,27 +46,6 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
         }
         return Resource.Error(response.message())
     }
-
-//    private fun handleSearchNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
-//        if (response.isSuccessful) {
-//            response.body()?.let { resultResponse ->
-//                if (searchNewsResponse == null || newSearchQuery != oldSearchQuery) {
-//                    searchNewsPage = 1
-//                    oldSearchQuery = newSearchQuery
-//                    searchNewsResponse = resultResponse
-//                } else {
-//                    searchNewsPage++
-//                    val oldArticles = searchNewsResponse?.articles
-//                    val newArticles = resultResponse.articles
-//                    oldArticles?.addAll(newArticles)
-//                }
-//                // Filter out removed articles
-//                filterRemovedArticles(searchNewsResponse)
-//                return Resource.Success(searchNewsResponse ?: resultResponse)
-//            }
-//        }
-//        return Resource.Error(response.message())
-//    }
 
     // Function to filter out removed articles
     private fun filterRemovedArticles(response: NewsResponse?) {
@@ -112,22 +81,4 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
             }
         }
     }
-
-//    private suspend fun searchNewsInternet(searchQuery: String) {
-//        newSearchQuery = searchQuery
-//        searchNews.postValue(Resource.Loading())
-//        try {
-//            if(internetConnection(this.getApplication())) {
-//                val response = newsRepository.searchNews(searchQuery, searchNewsPage)
-//                searchNews.postValue(handleSearchNewsResponse(response))
-//            } else {
-//                searchNews.postValue(Resource.Error("No internet connection"))
-//            }
-//        } catch (t: Throwable) {
-//            when (t) {
-//                is IOException -> searchNews.postValue(Resource.Error("Unable to connect"))
-//                else -> searchNews.postValue(Resource.Error("No signal"))
-//            }
-//        }
-//    }
 }
