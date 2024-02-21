@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">TheNewsApp</string>
     <string name="read_more_link">Read more</string>
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
 
 </resources>
