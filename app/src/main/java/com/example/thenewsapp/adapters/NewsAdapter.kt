@@ -10,6 +10,7 @@ import com.example.thenewsapp.R
 import com.example.thenewsapp.databinding.ItemNewsBinding
 import com.example.thenewsapp.models.Article
 
+//is responsible for adapting a list of articles into views that can be displayed within a RecyclerView
 class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
 
     inner class ArticleViewHolder(val binding: ItemNewsBinding) :

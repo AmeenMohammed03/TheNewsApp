@@ -65,6 +65,7 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
         }
     }
 
+    //This function handles the network call to fetch headlines
     private suspend fun headlinesInternet(countryCode: String) {
         headlines.postValue(Resource.Loading())
         try {
