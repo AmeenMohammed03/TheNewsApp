@@ -38,14 +38,6 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
         fetchNewsInternet(searchQuery, true)
     }
 
-    private fun handleHeadlinesResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
-        return handleResponse(response, false)
-    }
-
-    private fun handleSearchNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
-        return handleResponse(response, true)
-    }
-
     private fun handleResponse(response: Response<NewsResponse>, isSearch: Boolean): Resource<NewsResponse> {
         if (response.isSuccessful) {
             response.body()?.let { resultResponse ->
@@ -98,37 +90,29 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
     }
 
     //This function handles the network call to fetch headlines
-    private suspend fun fetchNewsInternet(countryCode: String, isSearch: Boolean) {
-        if (isSearch) {
-            searchNews.postValue(Resource.Loading())
-        } else {
-            headlines.postValue(Resource.Loading())
-        }
+    private suspend fun fetchNewsInternet(query: String, isSearch: Boolean) {
+        val loadingLiveData = if (isSearch) searchNews else headlines
+        loadingLiveData.postValue(Resource.Loading())
+
         try {
             if (internetConnection(this.getApplication())) {
-                val response = newsRepository.getHeadlines(countryCode, headlinesPage)
-                if (isSearch) {
-                    searchNews.postValue(handleSearchNewsResponse(response))
+                val response = if (isSearch) {
+                    newsRepository.searchNews(query, searchNewsPage)
                 } else {
-                    headlines.postValue(handleHeadlinesResponse(response))
+                    newsRepository.getHeadlines(query, headlinesPage)
+                }
+                handleResponse(response, isSearch)?.let {
+                    loadingLiveData.postValue(it)
                 }
             } else {
-                if (isSearch) {
-                    searchNews.postValue(Resource.Error("No internet connection"))
-                } else {
-                    headlines.postValue(Resource.Error("No internet connection"))
-                }
+                loadingLiveData.postValue(Resource.Error("No internet connection"))
             }
         } catch (t: Throwable) {
             val errorMessage = when (t) {
                 is IOException -> "Unable to connect"
                 else -> "No signal"
             }
-            if (isSearch) {
-                searchNews.postValue(Resource.Error(errorMessage))
-            } else {
-                headlines.postValue(Resource.Error(errorMessage))
-            }
+            loadingLiveData.postValue(Resource.Error(errorMessage))
         }
     }
 }
