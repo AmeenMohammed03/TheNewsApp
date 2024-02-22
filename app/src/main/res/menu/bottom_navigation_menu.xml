@@ -7,7 +7,6 @@
 
     <item android:id="@+id/searchFragment2"
         android:title="Search"
-        android:actionLayout="@layout/fragment_search"
         android:icon="@drawable/baseline_search_24" />
 
 </menu>

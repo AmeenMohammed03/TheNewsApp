@@ -17,8 +17,12 @@
     <fragment
         android:id="@+id/searchFragment2"
         android:name="com.example.thenewsapp.ui.fragment.SearchFragment"
-        android:label="SearchFragment"
-        tools:layout="@layout/fragment_search"/>
+        android:label="SearchFragment">
+        <action
+            android:id="@+id/action_searchFragment2_to_articleFragment"
+            app:destination="@id/articleFragment" />
+    </fragment>
+
 
     <fragment
         android:id="@+id/articleFragment"

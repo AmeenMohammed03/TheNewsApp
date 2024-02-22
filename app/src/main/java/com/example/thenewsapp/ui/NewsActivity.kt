@@ -49,6 +49,20 @@ class NewsActivity : AppCompatActivity() {
                 binding.drawerlayout.openDrawer(GravityCompat.START)
             }
         }
+
+        val latestNewsMenuItem = binding.bottomNavigationView.menu.findItem(R.id.headlinesFragment2)
+        latestNewsMenuItem.setOnMenuItemClickListener {
+            // Navigate to headlines fragment when Latest News icon is clicked
+            navController.navigate(R.id.headlinesFragment2)
+            true // Return true to indicate that the click event is consumed
+        }
+
+        val searchMenuItem = binding.bottomNavigationView.menu.findItem(R.id.searchFragment2)
+        searchMenuItem.setOnMenuItemClickListener {
+            // Navigate to search fragment when search icon is clicked
+            navController.navigate(R.id.searchFragment2)
+            true // Return true to indicate that the click event is consumed
+        }
     }
 
     private fun setUpDrawer() {
