@@ -13,12 +13,17 @@ import com.example.thenewsapp.repository.NewsRepository
 import com.example.thenewsapp.viewModel.NewsViewModel
 import com.example.thenewsapp.viewModel.NewsViewModelProviderFactory
 import com.google.android.material.navigation.NavigationView
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class NewsActivity : AppCompatActivity() {
 
     lateinit var newsViewModel: NewsViewModel
     private lateinit var binding: ActivityNewsBinding
     private lateinit var navigationView: NavigationView
+    private lateinit var lastUpdatedTextView: TextView
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,6 +31,8 @@ class NewsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.toolbar)
+        lastUpdatedTextView = findViewById(R.id.last_updated_time)
+
 
         val newsRepository = NewsRepository()
         val viewModelProviderFactory = NewsViewModelProviderFactory(application, newsRepository)
@@ -88,4 +95,15 @@ class NewsActivity : AppCompatActivity() {
             }
         }
     }
+
+    fun updateLastUpdatedTime() {
+        val currentTime = System.currentTimeMillis()
+        val formattedTime = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(currentTime)
+        // Assuming you have a TextView with id last_updated_time
+        binding.toolbar.findViewById<TextView>(R.id.last_updated_time).apply {
+            text = getString(R.string.last_updated, formattedTime)
+            visibility = View.VISIBLE
+        }
+    }
+
 }
