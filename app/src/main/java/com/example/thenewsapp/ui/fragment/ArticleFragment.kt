@@ -3,6 +3,7 @@ package com.example.thenewsapp.ui.fragment
 import android.os.Bundle
 import android.view.View
 import android.webkit.WebViewClient
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.navArgs
 import com.example.thenewsapp.R
@@ -24,11 +25,14 @@ class ArticleFragment : Fragment(R.layout.fragment_article) {
         newsViewModel = (activity as? NewsActivity)?.newsViewModel ?: return
         val article = args.article
 
-        binding.webView.apply {
-            webViewClient = WebViewClient()
-            article.url?.let { url ->
-                loadUrl(url)
+        if (!article.url.isNullOrEmpty()) {
+            binding.webView.apply {
+                webViewClient = WebViewClient()
+                loadUrl(article.url)
             }
+        } else {
+            // Handle the case where the article URL is null or empty
+            Toast.makeText(requireContext(), "Article URL is null or empty", Toast.LENGTH_SHORT).show()
         }
     }
 }
