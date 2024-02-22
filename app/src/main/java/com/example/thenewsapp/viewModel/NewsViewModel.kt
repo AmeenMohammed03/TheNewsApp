@@ -24,53 +24,56 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
     var searchNewsPage = 1
     private var searchNewsResponse: NewsResponse? = null
     private var newSearchQuery: String? = null
-    var oldSearchQuery: String? = null
+    private var oldSearchQuery: String? = null
 
     init {
         getHeadlines("us")
     }
 
     fun getHeadlines(countryCode: String) = viewModelScope.launch {
-        headlinesInternet(countryCode)
+        fetchNewsInternet(countryCode, false)
     }
 
     fun searchNews(searchQuery: String) = viewModelScope.launch {
-        searchNewsInternet(searchQuery)
+        fetchNewsInternet(searchQuery, true)
     }
 
-    private fun handleHeadlinesResponse(response: Response<NewsResponse>): Resource<NewsResponse>{
-        if(response.isSuccessful){
-            response.body()?.let { resultResponse ->
-                headlinesPage++
-                if(headlinesResponse == null){
-                    headlinesResponse = resultResponse
-                }else{
-                    val oldArticles = headlinesResponse?.articles
-                    val newArticles = resultResponse.articles
-                    oldArticles?.addAll(newArticles)
-                }
-                // Filter out removed articles
-                filterRemovedArticles(headlinesResponse)
-                return Resource.Success(headlinesResponse ?: resultResponse)
-            }
-        }
-        return Resource.Error(response.message())
+    private fun handleHeadlinesResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
+        return handleResponse(response, false)
     }
 
     private fun handleSearchNewsResponse(response: Response<NewsResponse>): Resource<NewsResponse> {
+        return handleResponse(response, true)
+    }
+
+    private fun handleResponse(response: Response<NewsResponse>, isSearch: Boolean): Resource<NewsResponse> {
         if (response.isSuccessful) {
             response.body()?.let { resultResponse ->
-                if (searchNewsResponse == null || newSearchQuery != oldSearchQuery) {
-                    searchNewsPage = 1
-                    oldSearchQuery = newSearchQuery
-                    searchNewsResponse = resultResponse
+                if (isSearch) {
+                    if (searchNewsResponse == null || newSearchQuery != oldSearchQuery) {
+                        searchNewsPage = 1
+                        oldSearchQuery = newSearchQuery
+                        searchNewsResponse = resultResponse
+                    } else {
+                        searchNewsPage++
+                        val oldArticles = searchNewsResponse?.articles
+                        val newArticles = resultResponse.articles
+                        oldArticles?.addAll(newArticles)
+                    }
+                    return Resource.Success(searchNewsResponse ?: resultResponse)
                 } else {
-                    searchNewsPage++
-                    val oldArticles = searchNewsResponse?.articles
-                    val newArticles = resultResponse.articles
-                    oldArticles?.addAll(newArticles)
+                    headlinesPage++
+                    if (headlinesResponse == null) {
+                        headlinesResponse = resultResponse
+                    } else {
+                        val oldArticles = headlinesResponse?.articles
+                        val newArticles = resultResponse.articles
+                        oldArticles?.addAll(newArticles)
+                    }
+                    // Filter out removed articles
+                    filterRemovedArticles(headlinesResponse)
+                    return Resource.Success(headlinesResponse ?: resultResponse)
                 }
-                return Resource.Success(searchNewsResponse ?: resultResponse)
             }
         }
         return Resource.Error(response.message())
@@ -95,36 +98,36 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
     }
 
     //This function handles the network call to fetch headlines
-    private suspend fun headlinesInternet(countryCode: String) {
-        headlines.postValue(Resource.Loading())
-        try {
-            if (internetConnection(this.getApplication())) {
-                val response = newsRepository.getHeadlines(countryCode, headlinesPage)
-                headlines.postValue(handleHeadlinesResponse(response))
-            } else {
-                headlines.postValue(Resource.Error("No internet connection"))
-            }
-        } catch (t: Throwable) {
-            when (t) {
-                is IOException -> headlines.postValue(Resource.Error("Unable to connect"))
-                else -> headlines.postValue(Resource.Error("No signal"))
-            }
+    private suspend fun fetchNewsInternet(countryCode: String, isSearch: Boolean) {
+        if (isSearch) {
+            searchNews.postValue(Resource.Loading())
+        } else {
+            headlines.postValue(Resource.Loading())
         }
-    }
-
-    private suspend fun searchNewsInternet(countryCode: String) {
-        headlines.postValue(Resource.Loading())
         try {
             if (internetConnection(this.getApplication())) {
                 val response = newsRepository.getHeadlines(countryCode, headlinesPage)
-                searchNews.postValue(handleSearchNewsResponse(response))
+                if (isSearch) {
+                    searchNews.postValue(handleSearchNewsResponse(response))
+                } else {
+                    headlines.postValue(handleHeadlinesResponse(response))
+                }
             } else {
-                searchNews.postValue(Resource.Error("No internet connection"))
+                if (isSearch) {
+                    searchNews.postValue(Resource.Error("No internet connection"))
+                } else {
+                    headlines.postValue(Resource.Error("No internet connection"))
+                }
             }
         } catch (t: Throwable) {
-            when (t) {
-                is IOException -> searchNews.postValue(Resource.Error("Unable to connect"))
-                else -> searchNews.postValue(Resource.Error("No signal"))
+            val errorMessage = when (t) {
+                is IOException -> "Unable to connect"
+                else -> "No signal"
+            }
+            if (isSearch) {
+                searchNews.postValue(Resource.Error(errorMessage))
+            } else {
+                headlines.postValue(Resource.Error(errorMessage))
             }
         }
     }
