@@ -31,7 +31,7 @@
         android:textSize="14sp"
         android:drawableTint="@color/purple"
         android:background="@drawable/search_border"
-        android:drawableEnd="@drawable/baseline_search_24"
+        android:drawableEnd="@drawable/ic_search"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

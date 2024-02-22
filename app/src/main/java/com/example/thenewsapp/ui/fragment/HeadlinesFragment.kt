@@ -68,7 +68,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     private fun reloadHeadlines() {
         swipeRefreshLayout.isRefreshing = true
         newsViewModel.getHeadlines("us")
-    //    saveLastUpdateTime()
+        (requireActivity() as NewsActivity).updateLastUpdatedTime()
     }
 
     private fun observeHeadlines() {
