@@ -1,5 +1,7 @@
 package com.example.thenewsapp.ui.fragment
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.AbsListView
@@ -25,8 +27,8 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     private lateinit var newsAdapter: NewsAdapter
     private lateinit var binding: FragmentHeadlinesBinding
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var sharedPreferences: SharedPreferences
 
-    private var isError = false
     private var isLoading = false
     private var isLastPage = false
     private var isScrolling = false
@@ -34,11 +36,19 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentHeadlinesBinding.bind(view)
-        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout)
+        swipeRefreshLayout = binding.swipeRefreshLayout
+
+        sharedPreferences =
+            requireContext().getSharedPreferences("NewsAppPrefs", Context.MODE_PRIVATE)
 
         newsViewModel = (requireActivity() as NewsActivity).newsViewModel
         setupHeadlinesRecycler()
+        observeHeadlines()
+        initViews()
+    }
 
+    private fun initViews() {
+        // Set up item click listener
         newsAdapter.setOnItemClickListener { article ->
             val bundle = Bundle().apply {
                 putSerializable("article", article)
@@ -48,35 +58,40 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
                 bundle
             )
         }
+
+        // Set up swipe refresh listener
         swipeRefreshLayout.setOnRefreshListener {
             reloadHeadlines()
         }
-        observeHeadlines()
     }
 
     private fun reloadHeadlines() {
         swipeRefreshLayout.isRefreshing = true
         newsViewModel.getHeadlines("us")
+    //    saveLastUpdateTime()
     }
+
     private fun observeHeadlines() {
         newsViewModel.headlines.observe(viewLifecycleOwner, Observer { response ->
             when (response) {
                 is Resource.Success -> {
-                    ProgressBar(false)
+                    showLoadingIndicator(false)
                     swipeRefreshLayout.isRefreshing = false
                     response.data?.let { newsResponse ->
                         handleHeadlinesResponse(newsResponse)
                     }
                 }
+
                 is Resource.Error -> {
-                    ProgressBar(true)
+                    showLoadingIndicator(true)
                     swipeRefreshLayout.isRefreshing = false
                     response.message?.let { message ->
-                        Toast.makeText(activity, "Sorry error: $message", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(activity, "Error: $message", Toast.LENGTH_SHORT).show()
                     }
                 }
+
                 is Resource.Loading -> {
-                    ProgressBar(false)
+                    showLoadingIndicator(true)
                 }
             }
         })
@@ -95,7 +110,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         }
     }
 
-    private fun ProgressBar(show: Boolean) {
+    private fun showLoadingIndicator(show: Boolean) {
         if (show) {
             binding.paginationProgressBar.visibility = View.VISIBLE
             isLoading = true
@@ -105,23 +120,28 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         }
     }
 
+    private fun setupHeadlinesRecycler() {
+        newsAdapter = NewsAdapter()
+        binding.recyclerHeadlines.apply {
+            adapter = newsAdapter
+            layoutManager = LinearLayoutManager(activity)
+            addOnScrollListener(scrollListener)
+        }
+    }
+
     private val scrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
             super.onScrolled(recyclerView, dx, dy)
             val layoutManager = recyclerView.layoutManager as LinearLayoutManager
-            val firstItemVisiblePosition = layoutManager.findFirstVisibleItemPosition()
             val visibleItemCount = layoutManager.childCount
             val totalItemCount = layoutManager.itemCount
-            val isNoErrors = !isError
-            val isNotLoadingAndNotLastPage = !isLoading && !isLastPage
-            val isAtLastItem = firstItemVisiblePosition + visibleItemCount >= totalItemCount
-            val isNotAtBeginning = firstItemVisiblePosition >= 0
-            val isTotalMoreThanVisible = totalItemCount >= Constants.QUERY_PAGE_SIZE
-            val shouldPaginate =
-                isNoErrors && isNotLoadingAndNotLastPage && isAtLastItem && isNotAtBeginning && isTotalMoreThanVisible && isScrolling
-            if (shouldPaginate) {
+            val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
+            val isAtEndOfList = !isLoading && !isLastPage &&
+                    (visibleItemCount + firstVisibleItemPosition >= totalItemCount) &&
+                    firstVisibleItemPosition >= 0
+            if (isAtEndOfList && !isScrolling) {
                 newsViewModel.getHeadlines("us")
-                isScrolling = false
+                isScrolling = true
             }
         }
 
@@ -130,15 +150,6 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
             if (newState == AbsListView.OnScrollListener.SCROLL_STATE_TOUCH_SCROLL) {
                 isScrolling = true
             }
-        }
-    }
-
-    private fun setupHeadlinesRecycler() {
-        newsAdapter = NewsAdapter()
-        binding.recyclerHeadlines.apply {
-            adapter = newsAdapter
-            layoutManager = LinearLayoutManager(activity)
-            addOnScrollListener(scrollListener)
         }
     }
 }
