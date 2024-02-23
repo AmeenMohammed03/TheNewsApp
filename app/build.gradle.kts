@@ -1,5 +1,7 @@
 plugins {
     id("com.android.application")
+    id("kotlin-android")
+    id("kotlin-kapt")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("androidx.navigation.safeargs.kotlin")
@@ -71,6 +73,8 @@ dependencies {
     implementation ("androidx.navigation:navigation-ui-ktx:2.7.5")
     // Glide
     implementation ("com.github.bumptech.glide:glide:4.12.0")
+    kapt ("com.github.bumptech.glide:compiler:4.12.0")
+
     //Refresh
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
