@@ -1,9 +1,18 @@
 package com.example.thenewsapp.ui
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.ListView
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
@@ -14,7 +23,6 @@ import com.example.thenewsapp.viewModel.NewsViewModel
 import com.example.thenewsapp.viewModel.NewsViewModelProviderFactory
 import com.google.android.material.navigation.NavigationView
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Locale
 
 class NewsActivity : AppCompatActivity() {
@@ -23,12 +31,14 @@ class NewsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNewsBinding
     private lateinit var navigationView: NavigationView
     private lateinit var lastUpdatedTextView: TextView
-
+    private lateinit var drawerLayout: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNewsBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        drawerLayout = binding.drawerlayout
 
         setSupportActionBar(binding.toolbar)
         lastUpdatedTextView = findViewById(R.id.last_updated_time)
@@ -83,7 +93,7 @@ class NewsActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_select_country -> {
-                    // Handle Select Country option
+                    showCountrySearchDialog(drawerLayout)
                     true
                 }
                 R.id.menu_exit -> {
@@ -95,6 +105,52 @@ class NewsActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun showCountrySearchDialog(drawerLayout: DrawerLayout) {
+        val countryCodes = newsViewModel.getCountryCodes()
+
+        val dialogView = layoutInflater.inflate(R.layout.country_search_dialog, null)
+        val editTextCountrySearch = dialogView.findViewById<EditText>(R.id.editTextCountrySearch)
+        val listViewCountryCodes = dialogView.findViewById<ListView>(R.id.listViewCountrySearch) // Correct id
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, countryCodes)
+        listViewCountryCodes.adapter = adapter
+
+        editTextCountrySearch.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                adapter.filter.filter(s)
+            }
+        })
+
+        // Set up dialog buttons
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(true)
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
+            .create()
+
+        // Handle item click in the list view
+        listViewCountryCodes.setOnItemClickListener { parent, view, position, id ->
+            val selectedCountryCode = parent.getItemAtPosition(position) as String
+            // Pass the selected country code to the API
+            if (selectedCountryCode == "us") {
+                // Fetch news for the default country (us)
+                newsViewModel.getHeadlines("us")
+            } else {
+                // Fetch news for the selected country code
+                newsViewModel.getHeadlines(selectedCountryCode)
+            }
+            dialog.dismiss()
+
+            // Close the navigation drawer
+            drawerLayout.closeDrawer(GravityCompat.START)
+        }
+
+        dialog.show()
+    }
+
 
     fun updateLastUpdatedTime() {
         val currentTime = System.currentTimeMillis()
