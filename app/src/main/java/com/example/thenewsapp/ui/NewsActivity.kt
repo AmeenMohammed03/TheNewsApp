@@ -80,6 +80,7 @@ class NewsActivity : AppCompatActivity() {
             navController.navigate(R.id.searchFragment2)
             true // Return true to indicate that the click event is consumed
         }
+        updateLastUpdatedTime()
     }
 
     private fun setUpDrawer() {
