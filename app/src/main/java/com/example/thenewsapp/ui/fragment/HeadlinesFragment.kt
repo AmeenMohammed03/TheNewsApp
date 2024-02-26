@@ -32,6 +32,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     private var isLoading = false
     private var isLastPage = false
     private var isScrolling = false
+    private var selectedCountryCode: String = "us"
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -66,9 +67,13 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     }
 
     private fun reloadHeadlines() {
-        swipeRefreshLayout.isRefreshing = true
-        newsViewModel.getHeadlines("us")
-        (requireActivity() as NewsActivity).updateLastUpdatedTime()
+        if (!isLoading) { // Check if loading is already in progress
+            isLoading = true // Set loading flag to true before fetching headlines
+            swipeRefreshLayout.isRefreshing = true // Show refresh indicator
+            newsViewModel.getHeadlines(selectedCountryCode) // Fetch headlines
+            // Do not reset isLoading flag here, it should be reset in observeHeadlines()
+            // (requireActivity() as NewsActivity).updateLastUpdatedTime()
+        }
     }
 
     private fun observeHeadlines() {
