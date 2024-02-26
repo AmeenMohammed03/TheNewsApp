@@ -62,6 +62,11 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
         // Initialize search edit text listener
         initSearchListener()
+
+        //Initialize swipe-to-refresh listener
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            refreshData()
+        }
     }
 
     private fun initSearchListener() {
@@ -73,11 +78,26 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                 delay(Constants.SEARCH_NEWS_TIME_DELAY)
                 editable?.let {
                     if (editable.toString().isNotEmpty()) {
+                        isLoading = true
+                        isLastPage = false
                         // Perform search when text is not empty
                         newsViewModel.searchNews(editable.toString())
+                    } else {
+                        newsAdapter.differ.submitList(emptyList())
+                        isLoading = false
+                        isLastPage = true
                     }
                 }
             }
+        }
+    }
+
+    private fun refreshData() {
+        if (isLoading) {
+            newsViewModel.searchNews(binding.searchEdit.text.toString())
+        } else
+        {
+            binding.swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -113,6 +133,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         // Adjust padding if it's the last page
         if (isLastPage) {
             binding.recyclerSearch.setPadding(0, 0, 0, 0)
+        }
+        if (binding.swipeRefreshLayout.isRefreshing) {
+            binding.swipeRefreshLayout.isRefreshing = false
         }
     }
 
