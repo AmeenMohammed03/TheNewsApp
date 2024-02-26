@@ -32,73 +32,48 @@ class NewsActivity : AppCompatActivity() {
     private lateinit var navigationView: NavigationView
     private lateinit var lastUpdatedTextView: TextView
     private lateinit var drawerLayout: DrawerLayout
+    private var selectedCountryCode: String = "us"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNewsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        drawerLayout = binding.drawerlayout
-
         setSupportActionBar(binding.toolbar)
-        lastUpdatedTextView = findViewById(R.id.last_updated_time)
-
-
-        val newsRepository = NewsRepository()
-        val viewModelProviderFactory = NewsViewModelProviderFactory(application, newsRepository)
-        newsViewModel =
-            ViewModelProvider(this, viewModelProviderFactory)[NewsViewModel::class.java]
-
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.newsNavHostFragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        binding.bottomNavigationView.setupWithNavController(navController)
-
-        // Set up the navigation drawer
-        navigationView = findViewById(R.id.navigationView)
-        setUpDrawer()
-
-        binding.toolbar.setOnClickListener {
-            // Open or close the navigation drawer when toolbar is clicked
-            if (binding.drawerlayout.isDrawerOpen(GravityCompat.START)) {
-                binding.drawerlayout.closeDrawer(GravityCompat.START)
-            } else {
-                binding.drawerlayout.openDrawer(GravityCompat.START)
-            }
-        }
-
-        val latestNewsMenuItem = binding.bottomNavigationView.menu.findItem(R.id.headlinesFragment2)
-        latestNewsMenuItem.setOnMenuItemClickListener {
-            // Navigate to headlines fragment when Latest News icon is clicked
-            navController.navigate(R.id.headlinesFragment2)
-            true // Return true to indicate that the click event is consumed
-        }
-
-        val searchMenuItem = binding.bottomNavigationView.menu.findItem(R.id.searchFragment2)
-        searchMenuItem.setOnMenuItemClickListener {
-            // Navigate to search fragment when search icon is clicked
-            navController.navigate(R.id.searchFragment2)
-            true // Return true to indicate that the click event is consumed
-        }
+        initViews()
+        setUpNavigationDrawer()
+        setUpBottomNavigationView()
         updateLastUpdatedTime()
     }
 
-    private fun setUpDrawer() {
+    private fun initViews() {
+        drawerLayout = binding.drawerlayout
+        navigationView = findViewById(R.id.navigationView)
+        lastUpdatedTextView = findViewById(R.id.last_updated_time)
+
+        val newsRepository = NewsRepository()
+        val viewModelProviderFactory = NewsViewModelProviderFactory(application, newsRepository)
+        newsViewModel = ViewModelProvider(this, viewModelProviderFactory)[NewsViewModel::class.java]
+
+        binding.toolbar.setOnClickListener {
+            toggleDrawer()
+        }
+    }
+
+    private fun setUpNavigationDrawer() {
         val toggle = ActionBarDrawerToggle(
-            this, binding.drawerlayout, binding.toolbar,
+            this, drawerLayout, binding.toolbar,
             R.string.nav_open, R.string.nav_close
         )
-        binding.drawerlayout.addDrawerListener(toggle)
+        drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_select_country -> {
-                    showCountrySearchDialog(drawerLayout)
+                    showCountrySearchDialog()
                     true
                 }
                 R.id.menu_exit -> {
-                    // Handle Exit option
                     finish() // Close the activity
                     true
                 }
@@ -107,12 +82,27 @@ class NewsActivity : AppCompatActivity() {
         }
     }
 
-    private fun showCountrySearchDialog(drawerLayout: DrawerLayout) {
+    private fun setUpBottomNavigationView() {
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.newsNavHostFragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        binding.bottomNavigationView.setupWithNavController(navController)
+    }
+
+    private fun toggleDrawer() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
+
+    private fun showCountrySearchDialog() {
         val countryCodes = newsViewModel.getCountryCodes()
 
         val dialogView = layoutInflater.inflate(R.layout.country_search_dialog, null)
         val editTextCountrySearch = dialogView.findViewById<EditText>(R.id.editTextCountrySearch)
-        val listViewCountryCodes = dialogView.findViewById<ListView>(R.id.listViewCountrySearch) // Correct id
+        val listViewCountryCodes = dialogView.findViewById<ListView>(R.id.listViewCountrySearch)
 
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, countryCodes)
         listViewCountryCodes.adapter = adapter
@@ -125,42 +115,29 @@ class NewsActivity : AppCompatActivity() {
             }
         })
 
-        // Set up dialog buttons
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .setCancelable(true)
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .create()
 
-        // Handle item click in the list view
         listViewCountryCodes.setOnItemClickListener { parent, view, position, id ->
             val selectedCountryCode = parent.getItemAtPosition(position) as String
-            // Pass the selected country code to the API
-            if (selectedCountryCode == "us") {
-                // Fetch news for the default country (us)
-                newsViewModel.getHeadlines("us")
-            } else {
-                // Fetch news for the selected country code
-                newsViewModel.getHeadlines(selectedCountryCode)
-            }
+            this@NewsActivity.selectedCountryCode = selectedCountryCode
+            newsViewModel.getHeadlines(selectedCountryCode)
             dialog.dismiss()
-
-            // Close the navigation drawer
             drawerLayout.closeDrawer(GravityCompat.START)
         }
 
         dialog.show()
     }
 
-
-    fun updateLastUpdatedTime() {
+    private fun updateLastUpdatedTime() {
         val currentTime = System.currentTimeMillis()
         val formattedTime = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(currentTime)
-        // Assuming you have a TextView with id last_updated_time
         binding.toolbar.findViewById<TextView>(R.id.last_updated_time).apply {
             text = getString(R.string.last_updated, formattedTime)
             visibility = View.VISIBLE
         }
     }
-
 }
