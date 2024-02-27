@@ -98,7 +98,7 @@ class NewsActivity : AppCompatActivity() {
     }
 
     private fun showCountrySearchDialog() {
-        val countries = Country.CountryList.countries.map { it.name }
+        val countries = CountryList.CountryList.countries.map { it.name }
 
         val dialogView = layoutInflater.inflate(R.layout.country_search_dialog, null)
         val editTextCountrySearch = dialogView.findViewById<EditText>(R.id.editTextCountrySearch)
@@ -123,10 +123,10 @@ class NewsActivity : AppCompatActivity() {
 
         listViewCountries.setOnItemClickListener { parent, view, position, id ->
             val selectedCountryName = parent.getItemAtPosition(position) as String
-            val countryCode = Country.getCountryCode(selectedCountryName)
-            if (countryCode != null) {
-                this@NewsActivity.selectedCountryCode = countryCode
-                newsViewModel.getHeadlines(countryCode)
+            val countryListCode = CountryList.getCountryCode(selectedCountryName)
+            if (countryListCode != null) {
+                this@NewsActivity.selectedCountryCode = countryListCode
+                newsViewModel.getHeadlines(countryListCode) // Fetch headlines for the selected country
             }
             dialog.dismiss()
             drawerLayout.closeDrawer(GravityCompat.START)
