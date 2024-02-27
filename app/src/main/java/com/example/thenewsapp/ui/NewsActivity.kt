@@ -98,14 +98,14 @@ class NewsActivity : AppCompatActivity() {
     }
 
     private fun showCountrySearchDialog() {
-        val countryCodes = newsViewModel.getCountryCodes()
+        val countries = Country.CountryList.countries.map { it.name }
 
         val dialogView = layoutInflater.inflate(R.layout.country_search_dialog, null)
         val editTextCountrySearch = dialogView.findViewById<EditText>(R.id.editTextCountrySearch)
-        val listViewCountryCodes = dialogView.findViewById<ListView>(R.id.listViewCountrySearch)
+        val listViewCountries = dialogView.findViewById<ListView>(R.id.listViewCountrySearch)
 
-        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, countryCodes)
-        listViewCountryCodes.adapter = adapter
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, countries)
+        listViewCountries.adapter = adapter
 
         editTextCountrySearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -121,10 +121,13 @@ class NewsActivity : AppCompatActivity() {
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .create()
 
-        listViewCountryCodes.setOnItemClickListener { parent, view, position, id ->
-            val selectedCountryCode = parent.getItemAtPosition(position) as String
-            this@NewsActivity.selectedCountryCode = selectedCountryCode
-            newsViewModel.getHeadlines(selectedCountryCode)
+        listViewCountries.setOnItemClickListener { parent, view, position, id ->
+            val selectedCountryName = parent.getItemAtPosition(position) as String
+            val countryCode = Country.getCountryCode(selectedCountryName)
+            if (countryCode != null) {
+                this@NewsActivity.selectedCountryCode = countryCode
+                newsViewModel.getHeadlines(countryCode)
+            }
             dialog.dismiss()
             drawerLayout.closeDrawer(GravityCompat.START)
         }
