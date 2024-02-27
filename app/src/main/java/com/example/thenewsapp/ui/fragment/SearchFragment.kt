@@ -93,12 +93,12 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     }
 
     private fun refreshData() {
+        // If isLoading is true, it means a search operation is already in progress, so just return
         if (isLoading) {
-            newsViewModel.searchNews(binding.searchEdit.text.toString())
-        } else
-        {
-            binding.swipeRefreshLayout.isRefreshing = false
+            return
         }
+        // Trigger a new search with the current search query
+        newsViewModel.searchNews(binding.searchEdit.text.toString())
     }
 
     private fun observeSearchNews() {
@@ -112,7 +112,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                 }
 
                 is Resource.Error -> {
-                    showLoadingIndicator(true)
+                    showLoadingIndicator(false)
                     response.message?.let { message ->
                         Toast.makeText(activity, "Error: $message", Toast.LENGTH_SHORT).show()
                     }
