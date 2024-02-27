@@ -52,12 +52,17 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
     }
 
     private fun initViews() {
-        // Set up item click listener
+        // Set up item click listener for search results
         newsAdapter.setOnItemClickListener { article ->
-            val bundle = Bundle().apply {
-                putSerializable("article", article)
+            try {
+                val action = SearchFragmentDirections.actionSearchFragment2ToArticleFragment(article)
+                findNavController().navigate(action)
+                println("Navigation to article fragment from search successful")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Navigation to article fragment from search failed: ${e.message}")
+                Toast.makeText(requireContext(), "Navigation failed", Toast.LENGTH_SHORT).show()
             }
-            findNavController().navigate(R.id.action_searchFragment2_to_articleFragment, bundle)
         }
 
         // Initialize search edit text listener

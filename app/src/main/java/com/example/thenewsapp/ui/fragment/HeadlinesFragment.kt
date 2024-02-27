@@ -1,10 +1,9 @@
 package com.example.thenewsapp.ui.fragment
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.widget.AbsListView
 import android.widget.Toast
@@ -53,13 +52,15 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
     private fun initViews() {
         // Set up item click listener
         newsAdapter.setOnItemClickListener { article ->
-            val bundle = Bundle().apply {
-                putSerializable("article", article)
+            try {
+                val action = HeadlinesFragmentDirections.actionHeadlinesFragment2ToArticleFragment(article)
+                findNavController().navigate(action)
+                println("Navigation to article fragment successful")
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Navigation to article fragment failed: ${e.message}")
+                Toast.makeText(requireContext(), "Navigation failed", Toast.LENGTH_SHORT).show()
             }
-            findNavController().navigate(
-                R.id.action_headlinesFragment2_to_articleFragment,
-                bundle
-            )
         }
 
         // Set up swipe refresh listener
