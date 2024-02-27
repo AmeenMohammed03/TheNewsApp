@@ -3,6 +3,8 @@ package com.example.thenewsapp.ui.fragment
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.AbsListView
 import android.widget.Toast
