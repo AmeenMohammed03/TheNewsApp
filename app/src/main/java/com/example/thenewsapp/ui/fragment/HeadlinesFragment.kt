@@ -53,7 +53,7 @@ class HeadlinesFragment : Fragment(R.layout.fragment_headlines) {
         // Set up item click listener
         newsAdapter.setOnItemClickListener { article ->
             try {
-                val action = HeadlinesFragmentDirections.actionHeadlinesFragment2ToArticleFragment(article)
+                val action = HeadlinesFragmentDirections.actionHeadlinesFragmentToArticleFragment(article)
                 findNavController().navigate(action)
                 println("Navigation to article fragment successful")
             } catch (e: Exception) {

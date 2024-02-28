@@ -55,7 +55,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         // Set up item click listener for search results
         newsAdapter.setOnItemClickListener { article ->
             try {
-                val action = SearchFragmentDirections.actionSearchFragment2ToArticleFragment(article)
+                val action = SearchFragmentDirections.actionSearchFragmentToArticleFragment(article)
                 findNavController().navigate(action)
                 println("Navigation to article fragment from search successful")
             } catch (e: Exception) {

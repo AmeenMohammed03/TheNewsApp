@@ -10,7 +10,7 @@
         android:name="com.example.thenewsapp.ui.fragment.HeadlinesFragment"
         android:label="Latest News" >
         <action
-            android:id="@+id/action_headlinesFragment2_to_articleFragment"
+            android:id="@+id/action_headlinesFragment_to_articleFragment"
             app:destination="@id/articleFragment" />
     </fragment>
 
@@ -19,7 +19,7 @@
         android:name="com.example.thenewsapp.ui.fragment.SearchFragment"
         android:label="SearchFragment">
         <action
-            android:id="@+id/action_searchFragment2_to_articleFragment"
+            android:id="@+id/action_searchFragment_to_articleFragment"
             app:destination="@id/articleFragment" />
     </fragment>
 
@@ -28,8 +28,7 @@
         android:id="@+id/articleFragment"
         android:name="com.example.thenewsapp.ui.fragment.ArticleFragment"
         android:label="ArticleFragment"
-        tools:layout="@layout/fragment_article"
-        tools:ignore="DuplicateIds">
+        tools:layout="@layout/fragment_article">
         <argument
             android:name="article"
             app:argType="com.example.thenewsapp.models.Article" />
