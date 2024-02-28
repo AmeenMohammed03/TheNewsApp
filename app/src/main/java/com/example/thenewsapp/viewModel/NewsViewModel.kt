@@ -97,9 +97,9 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
         try {
             if (internetConnection(this.getApplication())) {
                 val response = if (isSearch) {
-                    newsRepository.searchNews(query, searchNewsPage)
+                    newsRepository.searchNews(query)
                 } else {
-                    newsRepository.getHeadlines(query, headlinesPage)
+                    newsRepository.getHeadlines(query)
                 }
                 handleResponse(response, isSearch)?.let {
                     loadingLiveData.postValue(it)
