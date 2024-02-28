@@ -18,6 +18,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.thenewsapp.R
 import com.example.thenewsapp.databinding.ActivityNewsBinding
+import com.example.thenewsapp.models.CountriesList
 import com.example.thenewsapp.repository.NewsRepository
 import com.example.thenewsapp.viewModel.NewsViewModel
 import com.example.thenewsapp.viewModel.NewsViewModelProviderFactory
@@ -98,7 +99,7 @@ class NewsActivity : AppCompatActivity() {
     }
 
     private fun showCountrySearchDialog() {
-        val countries = CountryList.CountryList.countries.map { it.name }
+        val countries = CountriesList.CountryList.countries.map { it.name }
 
         val dialogView = layoutInflater.inflate(R.layout.country_search_dialog, null)
         val editTextCountrySearch = dialogView.findViewById<EditText>(R.id.editTextCountrySearch)
@@ -123,10 +124,10 @@ class NewsActivity : AppCompatActivity() {
 
         listViewCountries.setOnItemClickListener { parent, view, position, id ->
             val selectedCountryName = parent.getItemAtPosition(position) as String
-            val countryListCode = CountryList.getCountryCode(selectedCountryName)
-            if (countryListCode != null) {
-                this@NewsActivity.selectedCountryCode = countryListCode
-                newsViewModel.getHeadlines(countryListCode) // Fetch headlines for the selected country
+            val countriesListCode = CountriesList.getCountryCode(selectedCountryName)
+            if (countriesListCode != null) {
+                this@NewsActivity.selectedCountryCode = countriesListCode
+                newsViewModel.getHeadlines(countriesListCode) // Fetch headlines for the selected country
             }
             dialog.dismiss()
             drawerLayout.closeDrawer(GravityCompat.START)

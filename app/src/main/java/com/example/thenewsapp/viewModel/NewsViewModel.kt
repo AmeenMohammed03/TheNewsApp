@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.example.thenewsapp.models.CountriesList
 import com.example.thenewsapp.models.NewsResponse
 import com.example.thenewsapp.repository.NewsRepository
 import com.example.thenewsapp.util.Resource
@@ -26,8 +27,10 @@ class NewsViewModel(app: Application, val newsRepository: NewsRepository) : Andr
     private var newSearchQuery: String? = null
     private var oldSearchQuery: String? = null
 
+    private var selectedCountryCode: String = CountriesList.CountryList.DEFAULT_COUNTRY_CODE
+
     init {
-        getHeadlines("us")
+        getHeadlines(selectedCountryCode)
     }
 
     fun getHeadlines(countryCode: String) = viewModelScope.launch {
