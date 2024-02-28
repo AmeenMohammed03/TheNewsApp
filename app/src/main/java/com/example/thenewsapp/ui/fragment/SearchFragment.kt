@@ -189,4 +189,17 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             addOnScrollListener(scrollListener)
         }
     }
+
+    private fun clearSearchResults() {
+        binding.searchEdit.text.clear()
+        newsAdapter.differ.submitList(emptyList())
+        isLoading = false
+        isLastPage = false
+        refreshData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        clearSearchResults()
+    }
 }
