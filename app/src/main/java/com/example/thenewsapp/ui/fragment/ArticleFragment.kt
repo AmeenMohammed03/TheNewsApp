@@ -1,38 +1,34 @@
 package com.example.thenewsapp.ui.fragment
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.webkit.WebViewClient
-import android.widget.Toast
+import android.view.ViewGroup
+import android.webkit.WebView
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.navArgs
 import com.example.thenewsapp.R
-import com.example.thenewsapp.databinding.FragmentArticleBinding
-import com.example.thenewsapp.ui.NewsActivity
-import com.example.thenewsapp.viewModel.NewsViewModel
 
+class ArticleFragment : Fragment(){
 
-class ArticleFragment : Fragment(R.layout.fragment_article) {
+    lateinit var webView: WebView
 
-    private lateinit var newsViewModel: NewsViewModel
-    private val args: ArticleFragmentArgs by navArgs()
-    private lateinit var binding: FragmentArticleBinding
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.fragment_article, container, false)
+
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding = FragmentArticleBinding.bind(view)
+        initUi()
+    }
 
-        newsViewModel = (activity as? NewsActivity)?.newsViewModel ?: return
-        val article = args.article
-
-        if (!article.url.isNullOrEmpty()) {
-            binding.webView.apply {
-                webViewClient = WebViewClient()
-                loadUrl(article.url)
-            }
-        } else {
-            // Handle the case where the article URL is null or empty
-            Toast.makeText(requireContext(), "Article URL is null or empty", Toast.LENGTH_SHORT).show()
-        }
+    fun initUi(){
+        webView = requireView().findViewById(R.id.webView)
+        val url = arguments?.getString("url")
+        webView.loadUrl(url!!)
     }
 }
