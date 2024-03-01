@@ -11,7 +11,7 @@
     <!-- Main content view -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="50dp">
 
         <!-- Toolbar -->
         <androidx.appcompat.widget.Toolbar
@@ -27,6 +27,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" >
+
+            <EditText
+                android:id="@+id/search_edit_text"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:hint="Search headlines..."
+                android:inputType="text"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
             <TextView
                 android:id="@+id/last_updated_time"
@@ -57,49 +69,90 @@
 
         </androidx.appcompat.widget.Toolbar>
 
-        <!-- Content area -->
         <FrameLayout
-            android:id="@+id/flFragment"
+            android:id="@+id/f1Fragment"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
+            app:layout_constraintBottom_toTopOf="@+id/bottomToolbar"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
             <androidx.fragment.app.FragmentContainerView
-                android:id="@+id/newsNavHostFragment"
-                android:name="androidx.navigation.fragment.NavHostFragment"
+                android:id="@+id/news_container_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:defaultNavHost="true"
-                app:navGraph="@navigation/news_nav_graph" />
+                android:layout_height="wrap_content" />
 
         </FrameLayout>
 
-        <!-- Bottom navigation view -->
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationView"
+        <!-- Bottom Toolbar -->
+        <LinearLayout
+            android:id="@+id/bottomToolbar"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
-            app:menu="@menu/bottom_navigation_menu"
-            app:itemTextColor="@color/white"
-            app:itemIconTint="@color/white"
+            android:layout_height="wrap_content"
             android:background="@color/purple"
-            app:itemActiveIndicatorStyle="@style/App.Custom.Indicator"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"/>
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <!-- Latest News Option -->
+            <LinearLayout
+                android:id="@+id/latest_news_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/latest_news_icon"
+                    android:contentDescription="Latest News" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Latest News"
+                    android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+            <!-- Search Option -->
+            <LinearLayout
+                android:id="@+id/search_button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_search"
+                    android:contentDescription="Search" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Search"
+                    android:textColor="@android:color/white" />
+
+            </LinearLayout>
+
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Navigation view for the drawer -->
+    <!--Navigation view for the drawer-->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/navigationView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/menu_main" />
+        app:menu="@menu/menu_main"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>
