@@ -1,74 +1,88 @@
 package com.example.thenewsapp.ui
 
+import android.icu.text.SimpleDateFormat
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.ui.setupWithNavController
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import com.example.thenewsapp.R
-import com.example.thenewsapp.databinding.ActivityNewsBinding
 import com.example.thenewsapp.models.CountriesList
-import com.example.thenewsapp.repository.NewsRepository
-import com.example.thenewsapp.viewModel.NewsViewModel
-import com.example.thenewsapp.viewModel.NewsViewModelProviderFactory
+import com.example.thenewsapp.ui.contracts.NewsActivityInterface
+import com.example.thenewsapp.ui.fragment.LatestNewsFragment
+import com.example.thenewsapp.ui.fragment.SearchNewsFragment
 import com.google.android.material.navigation.NavigationView
-import java.text.SimpleDateFormat
 import java.util.Locale
 
-class NewsActivity : AppCompatActivity() {
-
-    lateinit var newsViewModel: NewsViewModel
-    private lateinit var binding: ActivityNewsBinding
-    private lateinit var navigationView: NavigationView
-    private lateinit var lastUpdatedTextView: TextView
-    private lateinit var drawerLayout: DrawerLayout
+class NewsActivity : AppCompatActivity(), NewsActivityInterface {
+    private var fm: FragmentManager? = null
+    private var fragment: Fragment? = null
     private var selectedCountryCode: String = "us"
+
+    private lateinit var navigationView: NavigationView
+    private lateinit var drawerLayout: DrawerLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityNewsBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        setSupportActionBar(binding.toolbar)
+        setContentView(R.layout.activity_news)
+        drawerLayout = findViewById(R.id.drawerlayout)
+        fm = supportFragmentManager
+        fragment = fm!!.findFragmentById(R.id.news_container_view)
+        fragment = LatestNewsFragment()
+        val ft = fm!!.beginTransaction()
+        ft.replace(R.id.news_container_view, fragment!!)
+        ft.commitAllowingStateLoss()
+
         initViews()
         setUpNavigationDrawer()
-        setUpBottomNavigationView()
         updateLastUpdatedTime()
     }
 
     private fun initViews() {
-        drawerLayout = binding.drawerlayout
+        drawerLayout = findViewById(R.id.drawerlayout)
         navigationView = findViewById(R.id.navigationView)
-        lastUpdatedTextView = findViewById(R.id.last_updated_time)
 
-        val newsRepository = NewsRepository()
-        val viewModelProviderFactory = NewsViewModelProviderFactory(application, newsRepository)
-        newsViewModel = ViewModelProvider(this, viewModelProviderFactory)[NewsViewModel::class.java]
+        val toolbar = findViewById<Toolbar>(R.id.toolbar)
+        setSupportActionBar(toolbar)
 
-        binding.toolbar.setOnClickListener {
-            toggleDrawer()
+        toolbar.setOnClickListener {
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START)
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
         }
-    }
+        val searchButton = findViewById<LinearLayout>(R.id.search_button)
+        searchButton.setOnClickListener {
+            val fragment = SearchNewsFragment()
+            supportFragmentManager.beginTransaction().apply {
+                replace(R.id.news_container_view, fragment)
+                addToBackStack(null)
+                commit()
+            }
+        }
 
+    }
     private fun setUpNavigationDrawer() {
         val toggle = ActionBarDrawerToggle(
-            this, drawerLayout, binding.toolbar,
-            R.string.nav_open, R.string.nav_close
+            this, drawerLayout, R.string.nav_open, R.string.nav_close
         )
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        navigationView.setNavigationItemSelectedListener { menuItem ->
+        findViewById<NavigationView>(R.id.navigationView).setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.menu_select_country -> {
                     showCountrySearchDialog()
@@ -80,21 +94,6 @@ class NewsActivity : AppCompatActivity() {
                 }
                 else -> false
             }
-        }
-    }
-
-    private fun setUpBottomNavigationView() {
-        val navHostFragment =
-            supportFragmentManager.findFragmentById(R.id.newsNavHostFragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        binding.bottomNavigationView.setupWithNavController(navController)
-    }
-
-    private fun toggleDrawer() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            drawerLayout.openDrawer(GravityCompat.START)
         }
     }
 
@@ -112,7 +111,7 @@ class NewsActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                adapter.filter.filter(s)
+                if (s != null && s.length >=3) adapter.filter.filter(s)
             }
         })
 
@@ -122,26 +121,27 @@ class NewsActivity : AppCompatActivity() {
             .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
             .create()
 
-        listViewCountries.setOnItemClickListener { parent, view, position, id ->
-            val selectedCountryName = parent.getItemAtPosition(position) as String
-            val countriesListCode = CountriesList.getCountryCode(selectedCountryName)
-            if (countriesListCode != null) {
-                this@NewsActivity.selectedCountryCode = countriesListCode
-                newsViewModel.getHeadlines(countriesListCode) // Fetch headlines for the selected country
-            }
+        listViewCountries.setOnItemClickListener { adapterView, _, i, _ ->
+            val selectedCountryName = adapterView.getItemAtPosition(i).toString()
+            selectedCountryCode = CountriesList.getCountryCode(selectedCountryName).toString()
             dialog.dismiss()
             drawerLayout.closeDrawer(GravityCompat.START)
+            val fragment = LatestNewsFragment()
+            val ft = fm!!.beginTransaction()
+            ft.replace(R.id.news_container_view, fragment)
+            ft.commitAllowingStateLoss()
         }
-
         dialog.show()
     }
 
     private fun updateLastUpdatedTime() {
         val currentTime = System.currentTimeMillis()
         val formattedTime = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(currentTime)
-        binding.toolbar.findViewById<TextView>(R.id.last_updated_time).apply {
-            text = getString(R.string.last_updated, formattedTime)
-            visibility = View.VISIBLE
-        }
+
+        val lastUpdatedTextView = findViewById<TextView>(R.id.last_updated_time)
+        lastUpdatedTextView.text = getString(R.string.last_updated, formattedTime)
+        lastUpdatedTextView.visibility = View.VISIBLE
     }
+
+    override fun getSelectedCountryCode(): String = selectedCountryCode
 }
