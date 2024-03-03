@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.thenewsapp.R
 import com.example.thenewsapp.adapters.NewsAdapter
 import com.example.thenewsapp.manager.NewsManager
@@ -31,6 +32,7 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
     private lateinit var dialog: AlertDialog
     private lateinit var manager: NewsManager
     private lateinit var activityCallBack: NewsActivityInterface
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_latest_news, container, false)
@@ -43,6 +45,7 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
 
     override fun initUi() {
         recyclerView = requireView().findViewById(R.id.recyclerHeadlines) as RecyclerView
+        swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout)
         // progressBar = requireView().findViewById(R.id.paginationProgressBar)
         adapter = NewsAdapter(this)
         manager = NewsManager(this)
@@ -50,6 +53,11 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
         newsRepository = NewsRepository()
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
+
+        swipeRefreshLayout.setOnRefreshListener {
+            val countryCode = activityCallBack.getSelectedCountryCode()
+            manager.getLatestNews(countryCode)
+        }
         val countryCode = activityCallBack.getSelectedCountryCode()
         manager.getLatestNews(countryCode)
     }
@@ -64,6 +72,7 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
     override fun submitListToAdapter(articles: List<Article>) {
         CoroutineScope(Dispatchers.Main).launch {
             adapter.differ.submitList(articles)
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
