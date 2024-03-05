@@ -7,6 +7,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.TextView
@@ -18,6 +19,7 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import com.example.thenewsapp.R
 import com.example.thenewsapp.models.CountriesList
 import com.example.thenewsapp.ui.contracts.NewsActivityInterface
@@ -33,11 +35,17 @@ class NewsActivity : AppCompatActivity(), NewsActivityInterface {
 
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
+    private lateinit var searchIcon: ImageView
+    private lateinit var searchEditText: EditText
+    private lateinit var searchButton: LinearLayout
+    private lateinit var latestNewsButton: LinearLayout
+    private lateinit var latestUpdatedTextView: TextView
+    private lateinit var toolbar: Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_news)
-        drawerLayout = findViewById(R.id.drawerlayout)
+
         fm = supportFragmentManager
         fragment = fm!!.findFragmentById(R.id.news_container_view)
         fragment = LatestNewsFragment()
@@ -53,23 +61,42 @@ class NewsActivity : AppCompatActivity(), NewsActivityInterface {
     private fun initViews() {
         drawerLayout = findViewById(R.id.drawerlayout)
         navigationView = findViewById(R.id.navigationView)
+        searchIcon = findViewById(R.id.search_icon)
+        latestNewsButton = findViewById(R.id.latest_news_button)
+        searchButton = findViewById(R.id.search_button)
+        searchEditText = findViewById(R.id.search_edit_text)
+        latestUpdatedTextView = findViewById(R.id.last_updated_time)
+        toolbar = findViewById(R.id.toolbar)
+        drawerLayout = findViewById(R.id.drawerlayout)
 
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        toolbar.setOnClickListener {
+        toolbar.setNavigationOnClickListener {
             if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
                 drawerLayout.closeDrawer(GravityCompat.START)
             } else {
                 drawerLayout.openDrawer(GravityCompat.START)
             }
         }
-        val searchButton = findViewById<LinearLayout>(R.id.search_button)
+
         searchButton.setOnClickListener {
             val fragment = SearchNewsFragment()
+            println("Search button clicked")
             supportFragmentManager.beginTransaction().apply {
                 replace(R.id.news_container_view, fragment)
                 addToBackStack(null)
+                commit()
+            }
+        }
+
+        latestNewsButton.setOnClickListener {
+            searchEditText.visibility = View.GONE
+            searchEditText.text.clear()
+            latestUpdatedTextView.visibility = View.VISIBLE
+            val latestNewsFragment = LatestNewsFragment()
+            supportFragmentManager.beginTransaction().apply {
+                replace(R.id.news_container_view, latestNewsFragment)
+                setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 commit()
             }
         }
