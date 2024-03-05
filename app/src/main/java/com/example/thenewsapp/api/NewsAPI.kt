@@ -1,7 +1,7 @@
 package com.example.thenewsapp.api
 
+import com.example.thenewsapp.api.Constants.Companion.API_KEY
 import com.example.thenewsapp.models.NewsResponse
-import com.example.thenewsapp.util.Constants.Companion.API_KEY
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -11,8 +11,6 @@ interface NewsAPI {
     suspend fun getHeadlines(
         @Query("country")
         countryCode: String,
-        @Query("page")
-        pageNumber: Int = 1,
         @Query("apikey")
         apiKey: String = API_KEY
     ): Response<NewsResponse>
@@ -21,8 +19,10 @@ interface NewsAPI {
     suspend fun searchForNews(
         @Query("q")
         searchQuery: String,
-        @Query("page")
-        pageNumber: Int = 1,
+        @Query("from")
+        from: String,
+        @Query("sortBy")
+        sortBy: String = "Popularity",
         @Query("apikey")
         apiKey: String = API_KEY
     ): Response<NewsResponse>
