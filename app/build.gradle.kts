@@ -1,10 +1,6 @@
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-    id("kotlin-kapt")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp")
-    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -42,6 +38,7 @@ android {
     }
 }
 
+
 dependencies {
 
     implementation("androidx.core:core-ktx:1.9.0")
@@ -52,32 +49,37 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    // Architectural Components
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    // Room
-    implementation ("androidx.room:room-runtime:2.6.0")
-    // Kotlin Extensions and Coroutines support for Room
-    implementation ("androidx.room:room-ktx:2.6.0")
-    // Coroutines
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
-    // Coroutine Lifecycle Scopes
-    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
-    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
     // Retrofit
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.5.0")
-    // Navigation Components
-    implementation ("androidx.navigation:navigation-fragment-ktx:2.7.5")
-    implementation ("androidx.navigation:navigation-ui-ktx:2.7.5")
+
+    // Room
+    implementation ("androidx.room:room-runtime:2.6.0")
+
+    // Coroutines
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
+
+    // Coroutine Lifecycle Scopes
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+
     // Glide
     implementation ("com.github.bumptech.glide:glide:4.12.0")
-    kapt ("com.github.bumptech.glide:compiler:4.12.0")
+    implementation ("com.github.bumptech.glide:okhttp3-integration:4.11.0")
 
-    //Refresh
-    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    //realm
+    implementation("io.realm:realm-annotations:10.11.0")
+    implementation("io.realm:realm-android-library:10.11.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.5.21")
 
-    implementation ("com.google.android.material:material:1.3.0-alpha03")
+    //Mockito Testing
+    implementation ("androidx.test.ext:junit-ktx:1.1.5")
+    testImplementation ("junit:junit:4.13.2")
+    testImplementation ("org.mockito.kotlin:mockito-kotlin:3.2.0")
+
 
 }
