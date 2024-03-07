@@ -34,9 +34,9 @@ interface SearchNewsFragmentInterface {
 
     fun hideProgressBar()
 
-    fun showNoNetworkDialog()
-
-    fun showInternalErrorDialog()
+//    fun showNoNetworkDialog()
+//
+//    fun showInternalErrorDialog()
 
     fun isNetworkAvailable(): Boolean
 

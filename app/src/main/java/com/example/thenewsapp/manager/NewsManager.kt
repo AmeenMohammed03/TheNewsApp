@@ -1,5 +1,6 @@
 package com.example.thenewsapp.manager
 
+import com.example.thenewsapp.models.Article
 import com.example.thenewsapp.models.NewsResponse
 import com.example.thenewsapp.ui.contracts.NewsFragmentInterface
 import com.example.thenewsapp.ui.contracts.SearchNewsFragmentInterface
@@ -44,7 +45,7 @@ class NewsManager() {
             searchView.searchForNews(query)
         } else {
             searchView.hideProgressBar()
-            searchView.showNoNetworkDialog()
+//            searchView.showNoNetworkDialog()
         }
     }
 
@@ -60,7 +61,7 @@ class NewsManager() {
             }
         } else {
             searchView.hideProgressBar()
-            searchView.showInternalErrorDialog()
+//            searchView.showInternalErrorDialog()
         }
     }
 }

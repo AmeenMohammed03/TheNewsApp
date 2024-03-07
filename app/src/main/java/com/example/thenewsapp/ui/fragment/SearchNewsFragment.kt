@@ -14,16 +14,17 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.thenewsapp.R
 import com.example.thenewsapp.adapters.NewsAdapter
 import com.example.thenewsapp.manager.NewsManager
 import com.example.thenewsapp.models.Article
 import com.example.thenewsapp.repository.NewsRepository
-import com.example.thenewsapp.ui.DialogUtil
 import com.example.thenewsapp.ui.contracts.SearchNewsFragmentInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -35,6 +36,7 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search), SearchNewsFragmen
     private lateinit var manager: NewsManager
     private lateinit var newsRepository: NewsRepository
     private lateinit var adapter: NewsAdapter
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,11 +54,20 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search), SearchNewsFragmen
     override fun initUi(){
         searchEditText = requireView().findViewById(R.id.searchEdit)
         recyclerView = requireView().findViewById(R.id.recyclerView)
+        swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout)
         manager = NewsManager(this)
         newsRepository = NewsRepository()
         adapter = NewsAdapter(this)
         recyclerView.adapter = adapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        swipeRefreshLayout.setOnRefreshListener {
+            val query = searchEditText.text.toString()
+            if (query.isNotEmpty()) {
+                fetchPreviousMonthNews(query)
+                manager.searchForNews(query)
+            }
+        }
 
 
         searchEditText.addTextChangedListener(object : TextWatcher {
@@ -69,7 +80,10 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search), SearchNewsFragmen
             }
 
             override fun afterTextChanged(p0: Editable?) {
-                if (p0.toString().length >= 3){
+                if (p0.isNullOrEmpty()) {
+                    adapter.clearList()
+                } else if (p0.toString().length >= 3){
+                    fetchPreviousMonthNews(p0.toString())
                     manager.searchForNews(p0.toString())
                 }
             }
@@ -77,17 +91,40 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search), SearchNewsFragmen
         })
     }
 
-    override fun searchForNews(query: String){
+    override fun searchForNews(query: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val from = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-            val response = newsRepository.searchNews(query, from, "popularity")
+            try {
+                val currentDate = LocalDateTime.now()
+                val previousMonthDate = currentDate.minusMonths(1)
+                val from = previousMonthDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+                val response = newsRepository.searchNews(query, from, "popularity")
+                manager.handleSearchNewsResponse(response)
+            } catch (e: Exception) {
+                e.printStackTrace()
+//                showInternalErrorDialog()
+            }
+        }
+    }
+
+    private fun fetchPreviousMonthNews(query: String) {
+        val startOfPreviousMonth = getStartOfPreviousMonth()
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = newsRepository.searchNews(query, startOfPreviousMonth, "popularity")
             manager.handleSearchNewsResponse(response)
         }
+    }
+
+    private fun getStartOfPreviousMonth(): String {
+        val currentDate = LocalDate.now()
+        val firstDayOfCurrentMonth = currentDate.withDayOfMonth(1)
+        val startOfPreviousMonth = firstDayOfCurrentMonth.minusMonths(1)
+        return startOfPreviousMonth.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     }
 
     override fun submitListToAdapter(articles: List<Article>){
         CoroutineScope(Dispatchers.Main).launch {
             adapter.differ.submitList(articles)
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 
@@ -99,33 +136,33 @@ class SearchNewsFragment : Fragment(R.layout.fragment_search), SearchNewsFragmen
         // hide progress bar
     }
 
-    override fun showNoNetworkDialog() {
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-                DialogUtil.showDialog(
-                    requireContext(),
-                    "No Network",
-                    "Please check your internet connection and try again"
-                ).show()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
+//    override fun showNoNetworkDialog() {
+//        CoroutineScope(Dispatchers.Main).launch {
+//            try {
+//                DialogUtil.showDialog(
+//                    requireContext(),
+//                    "No Network",
+//                    "Please check your internet connection and try again"
+//                ).show()
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
 
-    override fun showInternalErrorDialog(){
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-                DialogUtil.showDialog(
-                    requireContext(),
-                    "Internal Error",
-                    "An internal error occurred. Please try again later"
-                ).show()
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
+//    override fun showInternalErrorDialog(){
+//        CoroutineScope(Dispatchers.Main).launch {
+//            try {
+//                DialogUtil.showDialog(
+//                    requireContext(),
+//                    "Internal Error",
+//                    "An internal error occurred. Please try again later"
+//                ).show()
+//            } catch (e: Exception) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
 
     override fun showNoNewsFoundToast() {
         CoroutineScope(Dispatchers.Main).launch {
