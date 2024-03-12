@@ -1,5 +1,6 @@
 package com.example.thenewsapp.ui.contracts
 
+import com.example.thenewsapp.db.NewsData
 import com.example.thenewsapp.models.Article
 
 interface NewsFragmentInterface {
@@ -20,6 +21,8 @@ interface NewsFragmentInterface {
 
     fun submitListToAdapter(articles: List<Article>)
 
+    fun saveDataInRoom(data: NewsData)
+
 //    fun getSearchNews(searchQuery: String, from: String, sortBy: String)
 
 }
@@ -34,14 +37,18 @@ interface SearchNewsFragmentInterface {
 
     fun hideProgressBar()
 
-//    fun showNoNetworkDialog()
-//
-//    fun showInternalErrorDialog()
+    fun showNoNetworkDialog()
+
+    fun showInternalErrorDialog()
 
     fun isNetworkAvailable(): Boolean
 
     fun submitListToAdapter(articles: List<Article>)
 
     fun showNoNewsFoundToast()
+
+    fun showErrorText()
+
+    fun hideErrorText()
 
 }

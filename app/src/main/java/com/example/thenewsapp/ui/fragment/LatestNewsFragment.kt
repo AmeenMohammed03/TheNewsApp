@@ -11,15 +11,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.room.Room
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.thenewsapp.R
 import com.example.thenewsapp.adapters.NewsAdapter
+import com.example.thenewsapp.db.NewsData
+import com.example.thenewsapp.db.NewsDataBase
 import com.example.thenewsapp.manager.NewsManager
 import com.example.thenewsapp.models.Article
 import com.example.thenewsapp.repository.NewsRepository
 import com.example.thenewsapp.ui.DialogUtil
-import com.example.thenewsapp.ui.contracts.NewsFragmentInterface
 import com.example.thenewsapp.ui.contracts.NewsActivityInterface
+import com.example.thenewsapp.ui.contracts.NewsFragmentInterface
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,6 +37,10 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
     private lateinit var manager: NewsManager
     private lateinit var activityCallBack: NewsActivityInterface
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    companion object
+    {
+        lateinit var dataBase: NewsDataBase
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.fragment_latest_news, container, false)
@@ -41,6 +48,7 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        dataBase = Room.databaseBuilder(requireContext(), NewsDataBase::class.java, "news_data").build()
         initUi()
     }
 
@@ -64,9 +72,21 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
     }
 
     override fun getLatestNews(countryCode: String) {
-        // progressBar.visibility = View.VISIBLE
         CoroutineScope(Dispatchers.IO).launch {
-            manager.handleLatestNewsResponse(newsRepository.getHeadlines(countryCode))
+            try {
+                val response = newsRepository.getHeadlines(countryCode)
+                manager.handleLatestNewsResponse(response)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                println("Error in Fetching Headlines: ${e.message}")
+            }
+        }
+    }
+
+    override fun saveDataInRoom(data: NewsData) {
+        CoroutineScope(Dispatchers.IO).launch {
+            dataBase.newsDao().deleteNewsData()
+            dataBase.newsDao().insertNewsData(data)
         }
     }
 
@@ -139,4 +159,17 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
             commit()
         }
     }
+//    fun searchHeadlines(query: String?, articles: List<Article>) {
+//        val filteredList = mutableListOf<Article>()
+//
+//        query?.let { q ->
+//            for (article in articles) {
+//                if (article.title.contains(q, true) || article.description.contains(q, true)) {
+//                    filteredList.add(article)
+//                }
+//            }
+//        }
+//
+//        submitListToAdapter(filteredList)
+//    }
 }

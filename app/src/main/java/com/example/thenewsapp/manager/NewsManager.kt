@@ -1,9 +1,11 @@
 package com.example.thenewsapp.manager
 
+import com.example.thenewsapp.db.NewsData
 import com.example.thenewsapp.models.Article
 import com.example.thenewsapp.models.NewsResponse
 import com.example.thenewsapp.ui.contracts.NewsFragmentInterface
 import com.example.thenewsapp.ui.contracts.SearchNewsFragmentInterface
+import com.google.gson.Gson
 import retrofit2.Response
 
 class NewsManager() {
@@ -33,6 +35,7 @@ class NewsManager() {
                 val articles = newsResponse.articles
                 articles.removeAll { it.source!!.name.equals("[Removed]", true)}
                 view.submitListToAdapter(articles)
+                view.saveDataInRoom(NewsData("latest", toJsonString(articles)))
             }
         } else {
             view.hideProgressBar()
@@ -41,27 +44,22 @@ class NewsManager() {
     }
 
     fun searchForNews(query: String) {
-        if (searchView.isNetworkAvailable()) {
+        if (query.length >= 3) {
+            searchView.showProgressBar()
+            searchView.hideErrorText()
             searchView.searchForNews(query)
         } else {
-            searchView.hideProgressBar()
-//            searchView.showNoNetworkDialog()
+            searchView.showErrorText()
         }
     }
 
-    fun handleSearchNewsResponse(response: Response<NewsResponse>) {
-        if (response.isSuccessful) {
-            response.body()?.let { newsResponse ->
-                val articles = newsResponse.articles
-                articles.removeAll { it.source!!.name.equals("[Removed]", true)}
-                if (articles.isEmpty()) {
-                    searchView.showNoNewsFoundToast()
-                }
-                searchView.submitListToAdapter(articles)
-            }
-        } else {
-            searchView.hideProgressBar()
-//            searchView.showInternalErrorDialog()
+    fun filterNews(newsJson: String, searchQuery: String): List<Article> {
+        val articles = Gson().fromJson(newsJson, Array<Article>::class.java).toList()
+        return articles.filter {
+            it.title.contains(searchQuery, true)
         }
     }
+
+    private fun toJsonString(obj: Any): String = Gson().toJson(obj)
+
 }
