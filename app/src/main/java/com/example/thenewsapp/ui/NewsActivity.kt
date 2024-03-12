@@ -35,8 +35,6 @@ class NewsActivity : AppCompatActivity(), NewsActivityInterface {
     private var selectedCountryCode: String = "us"
     private lateinit var navigationView: NavigationView
     private lateinit var drawerLayout: DrawerLayout
-    private lateinit var searchIcon: ImageView
-    private lateinit var searchEditText: EditText
     private lateinit var searchButton: LinearLayout
     private lateinit var latestNewsButton: LinearLayout
     private lateinit var latestUpdatedTextView: TextView
@@ -58,10 +56,8 @@ class NewsActivity : AppCompatActivity(), NewsActivityInterface {
     private fun initViews() {
         drawerLayout = findViewById(R.id.drawerlayout)
         navigationView = findViewById(R.id.navigationView)
-        searchIcon = findViewById(R.id.search_icon)
         latestNewsButton = findViewById(R.id.latest_news_button)
         searchButton = findViewById(R.id.search_button)
-        searchEditText = findViewById(R.id.search_edit_text)
         latestUpdatedTextView = findViewById(R.id.last_updated_time)
         toolbar = findViewById(R.id.toolbar)
         drawerLayout = findViewById(R.id.drawerlayout)
@@ -75,8 +71,6 @@ class NewsActivity : AppCompatActivity(), NewsActivityInterface {
         }
         searchButton.setOnClickListener {
             latestUpdatedTextView.visibility = View.VISIBLE
-            searchEditText.visibility = View.GONE
-            searchIcon.visibility = View.GONE
             val fragment = SearchNewsFragment()
             println("Search button clicked")
             supportFragmentManager.beginTransaction().apply {
@@ -86,25 +80,12 @@ class NewsActivity : AppCompatActivity(), NewsActivityInterface {
             }
         }
         latestNewsButton.setOnClickListener {
-            searchIcon.visibility = View.VISIBLE
-            searchEditText.visibility = View.GONE
-            searchEditText.text.clear()
             latestUpdatedTextView.visibility = View.VISIBLE
             val latestNewsFragment = LatestNewsFragment()
             supportFragmentManager.beginTransaction().apply {
                 replace(R.id.news_container_view, latestNewsFragment)
                 setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                 commit()
-            }
-        }
-        searchIcon.setOnClickListener {
-            if (searchEditText.visibility == View.VISIBLE) {
-                searchEditText.visibility = View.GONE
-                latestUpdatedTextView.visibility = View.VISIBLE
-            } else {
-                searchEditText.visibility = View.VISIBLE
-                latestUpdatedTextView.visibility = View.GONE
-                searchEditText.requestFocus()
             }
         }
     }
