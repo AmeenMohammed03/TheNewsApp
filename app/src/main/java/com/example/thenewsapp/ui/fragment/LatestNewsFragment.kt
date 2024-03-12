@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,7 +31,7 @@ import kotlinx.coroutines.launch
 class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.OnItemClickListener ,
     NewsFragmentInterface {
     private lateinit var recyclerView: RecyclerView
-    // private lateinit var progressBar: ProgressBar
+    private lateinit var progressBar: ProgressBar
     private lateinit var adapter: NewsAdapter
     private lateinit var newsRepository: NewsRepository
     private lateinit var dialog: AlertDialog
@@ -55,7 +56,7 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
     override fun initUi() {
         recyclerView = requireView().findViewById(R.id.recyclerHeadlines) as RecyclerView
         swipeRefreshLayout = requireView().findViewById(R.id.swipeRefreshLayout)
-        // progressBar = requireView().findViewById(R.id.paginationProgressBar)
+        progressBar = requireView().findViewById(R.id.paginationProgressBar)
         adapter = NewsAdapter(this)
         manager = NewsManager(this)
         activityCallBack = requireActivity() as NewsActivityInterface
@@ -141,11 +142,11 @@ class LatestNewsFragment: Fragment(R.layout.fragment_latest_news), NewsAdapter.O
     }
 
     override fun showProgressBar() {
-        //progressBar.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
     }
 
     override fun hideProgressBar() {
-        // progressBar.visibility = View.INVISIBLE
+        progressBar.visibility = View.INVISIBLE
     }
 
     override fun onItemClick(article: Article) {
